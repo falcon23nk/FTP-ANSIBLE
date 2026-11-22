@@ -40,7 +40,9 @@ ansible-galaxy collection install -r requirements.yml
 # Copiar playbooks
 # Activaremos estas líneas según creemos los directorios.
 
-# cp -vrf /vagrant/dns .
+cp -vrf /vagrant/dns .
+
+chown -R vagrant:vagrant ./dns
 # cp -vrf /vagrant/web .
 # cp -vrf /vagrant/ftp .
 
