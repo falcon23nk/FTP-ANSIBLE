@@ -1,0 +1,28 @@
+acl "trusted" {
+    localhost;
+    192.168.57.0/24;
+};
+
+options {
+    directory "/var/cache/bind";
+
+    recursion yes;
+
+    allow-query {
+        trusted;
+    };
+
+    allow-recursion {
+        trusted;
+    };
+
+    listen-on {
+        any;
+    };
+
+    listen-on-v6 {
+        none;
+    };
+
+    dnssec-validation auto;
+};
