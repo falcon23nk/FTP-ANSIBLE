@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Configura el servidor como nodo de control de Ansible
+# Configurar el nodo controlador de Ansible
 
 set -xeu
 
@@ -25,42 +25,38 @@ chown vagrant:vagrant ./private_keys/*
 chmod 600 ./private_keys/*
 
 # Copiar configuración de Ansible
-# Activaremos estas líneas cuando creemos los archivos.
-
 cp -vf /vagrant/ansible.cfg .
 cp -vf /vagrant/inventory.yml .
 cp -vf /vagrant/requirements.yml .
 
-# Establecer permisos
+# Establecer permisos de configuración
 chown vagrant:vagrant ansible.cfg inventory.yml requirements.yml
-chown -R vagrant:vagrant dns web ftp
-chown vagrant:vagrant .vault_pass.txt
 
-# Instalar dependencias de Ansible
-ansible-galaxy collection install -r requirements.yml
-
-# Copiar playbooks
-# Activaremos estas líneas según creemos los directorios.
-
+# Copiar playbooks y sus archivos
 cp -vrf /vagrant/dns .
-chown -R vagrant:vagrant ./dns
 cp -vrf /vagrant/web .
-chown -R vagrant:vagrant ./web
 cp -vrf /vagrant/ftp .
+
+# Asignar propietarios después de copiar
+chown -R vagrant:vagrant ./dns
+chown -R vagrant:vagrant ./web
 chown -R vagrant:vagrant ./ftp
 
+# Comprobar que existe la contraseña de Vault
+if [ ! -f /vagrant/vault_pass.txt ]; then
+    echo "ERROR: No existe vault_pass.txt en el proyecto."
+    exit 1
+fi
 
-# Copiar contraseña del Vault
+# Copiar contraseña de Vault
 cp -vf /vagrant/vault_pass.txt ./.vault_pass.txt
-chmod 600 ./.vault_pass.txt
+
+# Configurar permisos
 chown vagrant:vagrant ./.vault_pass.txt
+chmod 600 ./.vault_pass.txt
 
-
-# Instalar dependencias
+# Instalar colecciones necesarias
 ansible-galaxy collection install -r requirements.yml
 
-# Ejecutar playbooks
-ansible-playbook dns/dns.yml
-ansible-playbook web/web.yml
-ansible-playbook ftp/ftp.yml \
-    --vault-password-file ./.vault_pass.txt
+# Las ejecuciones automáticas se activarán
+# después de comprobar la conexión SSH.
