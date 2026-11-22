@@ -33,6 +33,8 @@ cp -vf /vagrant/requirements.yml .
 
 # Establecer permisos
 chown vagrant:vagrant ansible.cfg inventory.yml requirements.yml
+chown -R vagrant:vagrant dns web ftp
+chown vagrant:vagrant .vault_pass.txt
 
 # Instalar dependencias de Ansible
 ansible-galaxy collection install -r requirements.yml
@@ -41,7 +43,6 @@ ansible-galaxy collection install -r requirements.yml
 # Activaremos estas líneas según creemos los directorios.
 
 cp -vrf /vagrant/dns .
-
 chown -R vagrant:vagrant ./dns
 cp -vrf /vagrant/web .
 chown -R vagrant:vagrant ./web
@@ -61,4 +62,5 @@ ansible-galaxy collection install -r requirements.yml
 # Ejecutar playbooks
 ansible-playbook dns/dns.yml
 ansible-playbook web/web.yml
-ansible-playbook ftp/ftp.yml --vault-password-file ./.vault_pass.txt
+ansible-playbook ftp/ftp.yml \
+    --vault-password-file ./.vault_pass.txt
