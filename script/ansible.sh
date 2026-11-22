@@ -27,9 +27,15 @@ chmod 600 ./private_keys/*
 # Copiar configuración de Ansible
 # Activaremos estas líneas cuando creemos los archivos.
 
-# cp -vf /vagrant/ansible.cfg .
-# cp -vf /vagrant/inventory.yml .
-# cp -vf /vagrant/requirements.yml .
+cp -vf /vagrant/ansible.cfg .
+cp -vf /vagrant/inventory.yml .
+cp -vf /vagrant/requirements.yml .
+
+# Establecer permisos
+chown vagrant:vagrant ansible.cfg inventory.yml requirements.yml
+
+# Instalar dependencias de Ansible
+ansible-galaxy collection install -r requirements.yml
 
 # Copiar playbooks
 # Activaremos estas líneas según creemos los directorios.
