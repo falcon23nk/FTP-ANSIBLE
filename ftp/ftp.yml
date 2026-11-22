@@ -1,0 +1,146 @@
+---
+- name: Provisionar el servidor FTP
+  hosts: negocio
+  become: true
+
+  vars:
+    cert_dir: "/etc/ssl/ftp"
+    domain_name: "noussayr.test"
+
+  vars_files:
+    - vars/vault.yml
+
+  tasks:
+
+    - name: Instalar vsftpd y dependencias
+      ansible.builtin.apt:
+        name:
+          - vsftpd
+          - python3-cryptography
+        state: present
+        update_cache: true
+
+    - name: Crear grupo FTP
+      ansible.builtin.group:
+        name: ftpusers
+        state: present
+
+    - name: Crear grupo webpublish
+      ansible.builtin.group:
+        name: webpublish
+        state: present
+
+    - name: Crear usuarios FTP
+      ansible.builtin.user:
+        name: "{{ item }}"
+        groups: ftpusers
+        append: true
+        create_home: true
+        shell: /bin/bash
+        password: "{{ ftp_password_hashes[item] }}"
+        state: present
+      loop:
+        - juan
+        - ana
+
+    - name: Añadir ana al grupo webpublish
+      ansible.builtin.user:
+        name: ana
+        groups: webpublish
+        append: true
+
+    - name: Preparar directorio web
+      ansible.builtin.file:
+        path: /var/www/html
+        state: directory
+        owner: root
+        group: webpublish
+        mode: "2775"
+
+    - name: Preparar permisos del index
+      ansible.builtin.file:
+        path: /var/www/html/index.html
+        owner: root
+        group: webpublish
+        mode: "0664"
+        state: file
+      ignore_errors: true
+
+    - name: Crear directorio de certificados
+      ansible.builtin.file:
+        path: "{{ cert_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Generar clave privada RSA
+      community.crypto.openssl_privatekey:
+        path: "{{ cert_dir }}/{{ domain_name }}.key"
+        type: RSA
+        size: 2048
+        mode: "0600"
+
+    - name: Generar solicitud CSR
+      community.crypto.openssl_csr_pipe:
+        privatekey_path: "{{ cert_dir }}/{{ domain_name }}.key"
+        common_name: "ftp.{{ domain_name }}"
+        organization_name: "Noussayr Kordass"
+        subject_alt_name:
+          - "DNS:{{ domain_name }}"
+          - "DNS:ftp.{{ domain_name }}"
+          - "DNS:www.{{ domain_name }}"
+      register: csr
+
+    - name: Generar certificado autofirmado
+      community.crypto.x509_certificate:
+        path: "{{ cert_dir }}/{{ domain_name }}.crt"
+        privatekey_path: "{{ cert_dir }}/{{ domain_name }}.key"
+        csr_content: "{{ csr.csr }}"
+        provider: selfsigned
+        selfsigned_not_after: "+365d"
+        mode: "0644"
+
+    - name: Copiar lista de excepciones
+      ansible.builtin.copy:
+        src: files/vsftpd.chroot_list
+        dest: /etc/vsftpd.chroot_list
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reiniciar vsftpd
+
+    - name: Crear directorio de configuraciones individuales
+      ansible.builtin.file:
+        path: /etc/vsftpd_user_conf
+        state: directory
+        mode: "0755"
+
+    - name: Configurar directorio FTP de ana
+      ansible.builtin.copy:
+        dest: /etc/vsftpd_user_conf/ana
+        content: |
+          local_root=/var/www/html
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reiniciar vsftpd
+
+    - name: Copiar configuración FTP
+      ansible.builtin.copy:
+        src: files/vsftpd.conf
+        dest: /etc/vsftpd.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reiniciar vsftpd
+
+    - name: Habilitar e iniciar vsftpd
+      ansible.builtin.service:
+        name: vsftpd
+        enabled: true
+        state: started
+
+  handlers:
+    - name: Reiniciar vsftpd
+      ansible.builtin.service:
+        name: vsftpd
+        state: restarted
