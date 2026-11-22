@@ -1,0 +1,14 @@
+# Archivos de Vagrant
+.vagrant/
+
+# Claves privadas
+private_keys/
+*.key
+*.pem
+
+# Contraseñas de Vault
+vault_pass.txt
+.vault_pass.txt
+
+# Configuración local
+.vscode/
