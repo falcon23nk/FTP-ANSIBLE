@@ -53,3 +53,32 @@ Se utilizarán tres máquinas virtuales:
 ## Autor
 
 Noussayr Kordass
+
+
+## Servicios desplegados
+
+### DNS
+- Servidor: dns.noussayr.test
+- IP: 192.168.57.5
+- Servicio: BIND9
+
+### Web
+- Servidor: negocio.noussayr.test
+- IP: 192.168.57.7
+- Nombre: www.noussayr.test
+- Servicio: Apache2
+
+### FTP
+- Nombre: ftp.noussayr.test
+- IP: 192.168.57.7
+- Servicio: vsftpd
+- Seguridad: FTP explícito sobre TLS
+- Usuarios: ana y juan
+
+## Seguridad
+
+Las contraseñas se almacenan mediante hashes protegidos
+con Ansible Vault.
+
+El archivo vault_pass.txt está excluido del repositorio
+mediante .gitignore.
