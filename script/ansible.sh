@@ -45,16 +45,20 @@ cp -vrf /vagrant/dns .
 chown -R vagrant:vagrant ./dns
 cp -vrf /vagrant/web .
 chown -R vagrant:vagrant ./web
-# cp -vrf /vagrant/ftp .
+cp -vrf /vagrant/ftp .
+chown -R vagrant:vagrant ./ftp
+
 
 # Copiar contraseña del Vault
-# cp -vf /vagrant/vault_pass.txt ./.vault_pass.txt
-# chmod 600 ./.vault_pass.txt
+cp -vf /vagrant/vault_pass.txt ./.vault_pass.txt
+chmod 600 ./.vault_pass.txt
+chown vagrant:vagrant ./.vault_pass.txt
+
 
 # Instalar dependencias
-# ansible-galaxy collection install -r requirements.yml
+ansible-galaxy collection install -r requirements.yml
 
 # Ejecutar playbooks
 ansible-playbook dns/dns.yml
-# ansible-playbook web/web.yml
-# ansible-playbook ftp/ftp.yml --vault-password-file ./.vault_pass.txt
+ansible-playbook web/web.yml
+ansible-playbook ftp/ftp.yml --vault-password-file ./.vault_pass.txt
