@@ -1,1 +1,14 @@
+# Normalizar automáticamente los archivos de texto
+* text=auto
+
+# Los scripts de Linux deben mantener finales LF
+*.sh text eol=lf
+
+# Configuración FTP: mantener siempre finales LF
 ftp/files/vsftpd.conf text eol=lf
+
+# Archivos binarios: imágenes y documentos
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.pdf binary
