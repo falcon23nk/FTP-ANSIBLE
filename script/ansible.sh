@@ -29,10 +29,10 @@ cp -vf /vagrant/ansible.cfg .
 cp -vf /vagrant/inventory.yml .
 cp -vf /vagrant/requirements.yml .
 
-# Establecer permisos de configuración
+# Asignar permisos de configuración
 chown vagrant:vagrant ansible.cfg inventory.yml requirements.yml
 
-# Copiar playbooks y sus archivos
+# Copiar carpetas de los servicios
 cp -vrf /vagrant/dns .
 cp -vrf /vagrant/web .
 cp -vrf /vagrant/ftp .
@@ -44,7 +44,7 @@ chown -R vagrant:vagrant ./ftp
 
 # Comprobar que existe la contraseña de Vault
 if [ ! -f /vagrant/vault_pass.txt ]; then
-    echo "ERROR: No existe vault_pass.txt en el proyecto."
+    echo "ERROR: No existe vault_pass.txt"
     exit 1
 fi
 
@@ -58,5 +58,15 @@ chmod 600 ./.vault_pass.txt
 # Instalar colecciones necesarias
 ansible-galaxy collection install -r requirements.yml
 
-# Las ejecuciones automáticas se activarán
-# después de comprobar la conexión SSH.
+# Comprobar conexión con los servidores
+ansible all -m ping
+
+# Ejecutar playbook DNS
+ansible-playbook dns/dns.yml
+
+# Ejecutar playbook web
+ansible-playbook web/web.yml
+
+# Ejecutar playbook FTP
+ansible-playbook ftp/ftp.yml \
+    --vault-password-file ./.vault_pass.txt
